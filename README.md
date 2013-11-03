@@ -1,2 +1,4 @@
 lsh
 ===
+local sensivity hashing.
+
