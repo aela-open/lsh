@@ -1,4 +1,3 @@
-
 def read_input( fName ):
 	"""
 	usage: { id : [words] } = read_input( fName )
@@ -18,7 +17,7 @@ def cha_matrix ( sentenceDict ):
 	"""
 	usage: { shingle : [ sentenceId ] } = cha_matrix ( { sentenceId : [ shingle ] } )
 	output	is a sorted by shingle
-	which will used to calculate minhash signature values
+	which will need to calculate minhash signature values combined with shingle dictionary
 	""" 
 	
 def minhash ( length, { sentenceId : [ shingle ] }):
