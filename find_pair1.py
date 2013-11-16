@@ -11,6 +11,7 @@ def shingle( k, words ):
 	trick is to find a good hash function wich will map words to a "unique"
 	shingle while being "efficient"
 	after this method { sentence_id : [ words ] } will converted to { sentence_id : [ single ] }
+	out=shingleMat
 	"""
 	
 def cha_matrix ( sentenceDict ):
@@ -18,9 +19,10 @@ def cha_matrix ( sentenceDict ):
 	usage: { shingle : [ sentenceId ] } = cha_matrix ( { sentenceId : [ shingle ] } )
 	output	is a sorted by shingle
 	which will need to calculate minhash signature values combined with shingle dictionary
+	out=charMat
 	""" 
 	
-def minhash ( length, { sentenceId : [ shingle ] }):
+def minhash ( length, charMat ,shingleMat):
 	"""
 	usage: { sentenceId : [minhashSig] } = minhash ( { sentenceId : [ shingle ] } )
 	[ minhash_sig ] is a list of integers
