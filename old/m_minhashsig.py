@@ -11,8 +11,7 @@ def minhash_t( length, charMat ,shingleMat):
 	usage: { sentenceId : [minhashSig] } = minhash_t ( { sentenceId : [ shingle ] } )
 	length is number of permutations used to calc minhash
 	[ minhash_sig ] is a list of integers
-	which will used for lsh function
-	NOTE this function uses random hashing instead of shuffling
+	which will used for lsh function	
 	"""
 	return minhash( length, charMat ,shingleMat)
 
@@ -26,5 +25,7 @@ startT=time.time()
 charMat = cha_matrix (shingleMat)
 print 'making chaMat end',time.time()-startT
 startT=time.time()
-minHashSig= minhash_t(2,charMat,shingleMat)
+minHashSig= minhash_t(10,charMat,shingleMat)
 print 'making hashSig end',time.time()-startT
+
+print minHashSig['10']

@@ -23,12 +23,12 @@
 #  
 import random
 
-fname="RockYou-MostPopular500000PassesLetters_less50000.dic"
-wfname="input.txt"
-sentences=20
-sent_len_low=8
-sent_len_high=10
-word_bucket_size=20
+fname="bucket.txt"		#includes 5000 different words
+wfname="input.txt"		#output of this script
+sentences=100 			# # of sentences
+sent_len_low=8			#sentence length lower margin
+sent_len_high=10		#sentence length higher margin
+word_bucket_size=10	# # of words to choose from to create sentences
 
 fp=open(fname,'r')
 wfp=open(wfname,'w')
