@@ -1,7 +1,24 @@
+
+# NOTE : THIS SCRIPT REQUIRS PYTHON 2.7
+
 import collections
 import random
 import time
 import itertools
+
+### ~CONFIGURATIONS ~ ###
+
+in_fname='Textfile_Withsentences.txt'
+out_fname='scs2009_sentences.out'
+wordsForShingle=3 # NOTE :if u change this value have to make changes inside shingle() function
+modForShingle=101
+noOfHashFunctions=24
+sizeOfBand=2
+threshold=.5
+
+### END OF CONFIGURATIONS ###
+
+### START OF METHOD DEFINITIONS ###
     
 def read_input( fileName ):
 	"""
@@ -37,7 +54,7 @@ def prepros(inv_dic):
 		new_dic[v[0]]=k.split()
 	return (similar_list,new_dic)
 	
-def shingle( k, words ):
+def shingle( k, words ,mod ):
 	"""
 	usage: [ shingles ] = shingle( k, [words] )
 	generate k-shingle list for given word list through a hash function.
@@ -49,16 +66,16 @@ def shingle( k, words ):
 	"""
 	shingleList = []
 	for index, word in enumerate (words[: -( k-1 ) ] ):
-		shingleList.append ( hash ( words[ index ] + words[ index + 1 ] + words [ index + 2 ]) % 101 )        
+		shingleList.append ( hash ( words[ index ] + words[ index + 1 ] + words [ index + 2 ])%mod)        
 	return shingleList
 
-def shingle_all(k,dic):
+def shingle_all(k,dic,mod):
 	"""	
 	usage: { id : [ shingle, ], } = shingle_all ( k, { id: [ word, ], } )
 	shingle the whole dictionary at once
 	"""
 	for item in dic:		
-		dic[ item ] = shingle( k, dic[ item ] )	
+		dic[ item ] = shingle( k, dic[ item ] ,mod)	
 	return dic
 
 def cha_matrix (sentenceDict):
@@ -106,16 +123,17 @@ def minhash(length, charMat, shingleMat):
     return minHashDic
 	
 def breakIntoBands (sizeOfBands, minHash ):
-	"""
-	usage: ( ( sentenceId, ), ) = lsh ( sentenceId : [ minhashSig ] )
-	calculate similar pairs less than t = 0.87168 threshhold
-	"""
+	
 	for x in minHash:		
 		minHash[x]=chunks(minHash[x], sizeOfBands)
 		
 	return minHash
 
 def candidates (sizeOfBands, minHash):
+	"""
+	usage: ( ( sentenceId, ), ) = lsh ( sentenceId : [ minhashSig ] )
+	compare min hash signatures bandwise
+	"""
 	bandDictionary=breakIntoBands (sizeOfBands, minHash )	
 	for count in range(len(bandDictionary[bandDictionary.keys()[0]])):
 		temp={}
@@ -173,15 +191,13 @@ def check_JS ( t, idList):
 						
 	return jsQList
 
-
 def edit_distance(pair_list,dic):
 	final_list=[]
 	for pair in pair_list:		
 		if levenshtein(dic[pair[0]],dic[pair[1]])<=1:
 			final_list.append(list(pair))
 			
-	return final_list
-				
+	return final_list				
 
 def levenshtein(s1, s2):
     if len(s1) < len(s2):
@@ -203,7 +219,7 @@ def levenshtein(s1, s2):
 def p_check_JS (idList):
 	"""
 	check the candidate ids with jacard similarity
-	used only for testing purposes
+	NOTE :used only for testing purposes
 	"""
 	pairList=idList	
 	for each in pairList:
@@ -228,6 +244,9 @@ def p_check_JS (idList):
 	return jsVal	
 		
 def make_final(final,similar):
+	"""
+	create the final list combining finals with previously ommited 100% similar ones
+	"""
 	fin=[]
 	if len(similar):
 		for s in similar:
@@ -244,6 +263,9 @@ def make_final(final,similar):
 	return fin
 
 def ommit_dup(similars):
+	"""
+	remove duplicates from the final list
+	"""
 	similars_wo_dup=[]
 	for x in similars:
 		y= list(x)
@@ -251,7 +273,16 @@ def ommit_dup(similars):
 		similars_wo_dup.append(tuple(y))
 	return list(set(similars_wo_dup))
 
-in_fname='Textfile_Withsentences.txt'
+def write_out(sim_list,fileName):
+	"""
+	write the list to a file
+	"""
+	f=open( fileName, 'w')
+	for cup in sim_list:
+		f.write(cup[0]+' '+cup[1]+'\n')
+	f.close()	
+
+### END OF METHOD DEFINITIONS ###
 
 st1=time.time()
 st=time.time()
@@ -265,15 +296,12 @@ print 'inverse:',time.time()-st
 st=time.time()
 
 similar_list,dic=prepros(inv_dic)
-#~ print 'exact similar \t\t:',len(similar_list)
 print 'prepros :',time.time()-st
 st=time.time()
 
 copyOfDic=dic.copy()
-#~ print ' :',time.time()-st
-#~ st=time.time(
 
-shingleMat=shingle_all(3,dic)
+shingleMat=shingle_all(wordsForShingle,dic,modForShingle)
 print 'shingle_all:',time.time()-st
 st=time.time()
 
@@ -281,7 +309,7 @@ charMat = cha_matrix (shingleMat)
 print 'cha_matrix:',time.time()-st
 st=time.time()
 
-minHashSig= minhash(24,charMat,shingleMat)
+minHashSig= minhash(noOfHashFunctions,charMat,shingleMat)
 print 'minhash :',time.time()-st
 st=time.time()
 
@@ -289,17 +317,16 @@ copyMinHashSig=minHashSig.copy()
 print 'copying minHashSig :',time.time()-st
 st=time.time()
 
-candList=candidates(6,minHashSig)
+candList=candidates(sizeOfBand,minHashSig)
 print 'candidates :',time.time()-st
 st=time.time()
-#~ print candList
 
 pairList=makePairList(candList)
 print 'makePairList:',time.time()-st
 st=time.time()
 print 'after lsh(wo 100%) \t\t\t:',len(pairList)
 
-jsQPairList=check_JS(.5,pairList)
+jsQPairList=check_JS(threshold,pairList)
 print 'check_JS :',time.time()-st
 st=time.time()
 print 'after checking js(wo 100%) \t\t:',len(jsQPairList)
@@ -321,11 +348,13 @@ print 'final(all) \t\t\t\t:',len(similar_pair)
 similar_pair=ommit_dup(similar_pair)
 print 'ommit_dup:',time.time()-st
 st=time.time()
-#~ print len(similar_pair)
+
+write_out(similar_pair,out_fname)
+
+#~ for cup in similar_pair:
+	#~ print org_dic[cup[0]]
+	#~ print org_dic[cup[1]]
+	#~ print ''
 
 print 'final(all) \t\t\t\t:',len(similar_pair)
 print 'total time :',time.time()-st1
-
-#~ final_list=[('1','4'),]
-#~ 
-#~ print p_check_JS(final_list)
