@@ -221,8 +221,8 @@ def p_check_JS (idList):
 		print each[1],shingleMat[each[1]]		
 		print each[0],copyMinHashSig[each[0]]
 		print each[1],copyMinHashSig[each[1]]
-		#~ print each[0],org_dic[each[0]]
-		#~ print each[1],org_dic[each[1]]
+		print each[0],copyOfDic[each[0]]
+		print each[1],copyOfDic[each[1]]
 		
 				
 	return jsVal	
@@ -240,32 +240,92 @@ def make_final(final,similar):
 							fin.append(f)
 	else:
 		fin=final
+		
 	return fin
-						
-org_dic=read_input('input.txt')
+
+def ommit_dup(similars):
+	similars_wo_dup=[]
+	for x in similars:
+		y= list(x)
+		y.sort()
+		similars_wo_dup.append(tuple(y))
+	return list(set(similars_wo_dup))
+
+in_fname='Textfile_Withsentences.txt'
+
+st1=time.time()
+st=time.time()
+				
+org_dic=read_input(in_fname)
+print 'read in :',time.time()-st
+st=time.time()
+
 inv_dic=inverse_dic(org_dic)
+print 'inverse:',time.time()-st
+st=time.time()
 
 similar_list,dic=prepros(inv_dic)
+#~ print 'exact similar \t\t:',len(similar_list)
+print 'prepros :',time.time()-st
+st=time.time()
+
+copyOfDic=dic.copy()
+#~ print ' :',time.time()-st
+#~ st=time.time(
+
 shingleMat=shingle_all(3,dic)
+print 'shingle_all:',time.time()-st
+st=time.time()
 
 charMat = cha_matrix (shingleMat)
-minHashSig= minhash(24,charMat,shingleMat)
-copyMinHashSig=minHashSig.copy()
+print 'cha_matrix:',time.time()-st
+st=time.time()
 
-candList=candidates(2,minHashSig)
+minHashSig= minhash(24,charMat,shingleMat)
+print 'minhash :',time.time()-st
+st=time.time()
+
+copyMinHashSig=minHashSig.copy()
+print 'copying minHashSig :',time.time()-st
+st=time.time()
+
+candList=candidates(6,minHashSig)
+print 'candidates :',time.time()-st
+st=time.time()
 #~ print candList
+
 pairList=makePairList(candList)
-print 'after lsh(wo 100%) \t\t\t:',pairList
+print 'makePairList:',time.time()-st
+st=time.time()
+print 'after lsh(wo 100%) \t\t\t:',len(pairList)
+
 jsQPairList=check_JS(.5,pairList)
-print 'after checking js(wo 100%) \t\t:',jsQPairList
-f=edit_distance(jsQPairList,dic)
-print 'after checking word edit dist(wo 100%) \t:',f
+print 'check_JS :',time.time()-st
+st=time.time()
+print 'after checking js(wo 100%) \t\t:',len(jsQPairList)
+
+f=edit_distance(jsQPairList,copyOfDic)
+print 'edit_distance:',time.time()-st
+st=time.time()
+print 'after checking word edit dist(wo 100%) \t:',len(f)
 
 final_list=make_final(f,similar_list)
-similar_pair=makePairList(final_list)
-#~ print len(similar_pair)
-print 'final(all) \t\t\t\t:',similar_pair
+print 'make_final:',time.time()-st
+st=time.time()
 
-final_list=[('1','4'),]
+similar_pair=makePairList(final_list)
+print 'makePairList:',time.time()-st
+st=time.time()
+print 'final(all) \t\t\t\t:',len(similar_pair)
+
+similar_pair=ommit_dup(similar_pair)
+print 'ommit_dup:',time.time()-st
+st=time.time()
+#~ print len(similar_pair)
+
+print 'final(all) \t\t\t\t:',len(similar_pair)
+print 'total time :',time.time()-st1
+
+#~ final_list=[('1','4'),]
 #~ 
-print p_check_JS(final_list)
+#~ print p_check_JS(final_list)
